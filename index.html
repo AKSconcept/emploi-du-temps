@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Emploi du temps S1</title>
+<style>
+/* Layout: one narrow phone column. Hero "now / next" card, tab bar, then one panel at a time. Campus is encoded by color (Xipu jade, Jiuli ochre). */
+:root{
+  --bg:#F3F6F5; --surface:#FFFFFF; --ink:#13201C; --muted:#5A6A65; --line:#D9E2DE;
+  --jade:#0E7457; --jade-soft:#E0F0E9; --ochre:#A86A12; --ochre-soft:#F8EDD9;
+  --red:#B3322B; --red-soft:#F9E3E1;
+  --f-display:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --f-zh:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1412; --surface:#15201C; --ink:#E4EDEA; --muted:#94A49F; --line:#25332E;
+  --jade:#4FC79F; --jade-soft:#123029; --ochre:#E2A64F; --ochre-soft:#33281A;
+  --red:#F07B70; --red-soft:#3A1D1B; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0D1412; --surface:#15201C; --ink:#E4EDEA; --muted:#94A49F; --line:#25332E;
+  --jade:#4FC79F; --jade-soft:#123029; --ochre:#E2A64F; --ochre-soft:#33281A;
+  --red:#F07B70; --red-soft:#3A1D1B; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+.wrap{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:14px 40px;display:flex;flex-direction:column;gap:14px}
+.zh{font-family:var(--f-zh)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+header h1{font-family:var(--f-display);font-weight:800;font-size:1.35rem;margin:0;letter-spacing:-.01em;text-wrap:balance}
+header .sub{color:var(--muted);font-size:.85rem}
+.weekpill{font-family:var(--f-mono);font-size:.8rem;font-weight:600;padding:5px 10px;border-radius:999px;background:var(--jade-soft);color:var(--jade);white-space:nowrap}
+.weekpill.unknown{background:var(--ochre-soft);color:var(--ochre)}
+
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;border-top:5px solid var(--jade)}
+.hero.jiuli{border-top-color:var(--ochre)}
+.hero .state{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.hero .state b{color:var(--jade)}
+.hero.jiuli .state b{color:var(--ochre)}
+.hero h2{font-family:var(--f-display);font-size:1.45rem;line-height:1.15;margin:0;font-weight:800;text-wrap:balance}
+.hero .en{color:var(--muted);font-size:.85rem;margin-top:-6px}
+.hero .facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.fact{background:var(--bg);border-radius:10px;padding:8px 10px;min-width:0}
+.fact small{display:block;font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.fact span{font-weight:700;font-size:.95rem;overflow-wrap:anywhere}
+.count{font-family:var(--f-mono);font-weight:600;font-size:1.05rem}
+.note{font-size:.85rem;padding:8px 10px;border-radius:10px;background:var(--ochre-soft);color:var(--ink)}
+.note b{color:var(--ochre)}
+
+.alert{display:flex;gap:10px;align-items:flex-start;background:var(--red-soft);border-radius:12px;padding:10px 12px;font-size:.88rem}
+.alert .dot{width:10px;height:10px;border-radius:50%;background:var(--red);margin-top:5px;flex:none}
+.alert b{color:var(--red)}
+.alert.soft{background:var(--ochre-soft)} .alert.soft .dot{background:var(--ochre)} .alert.soft b{color:var(--ochre)}
+
+nav.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+nav.tabs button{font:inherit;font-size:.85rem;font-weight:600;border:0;background:transparent;color:var(--muted);padding:9px 4px;border-radius:9px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--jade);outline-offset:2px}
+
+section.panel{display:flex;flex-direction:column;gap:12px}
+h3{font-family:var(--f-display);font-size:1rem;margin:4px 0 0;font-weight:700}
+.muted{color:var(--muted)}
+
+.day{display:flex;flex-direction:column;gap:6px}
+.dayhead{display:flex;justify-content:space-between;align-items:baseline;font-weight:700;font-size:.9rem;padding-inline:2px}
+.dayhead .d{color:var(--muted);font-weight:500;font-size:.8rem}
+.day.today .dayhead{color:var(--jade)}
+.slot{display:grid;grid-template-columns:62px minmax(0,1fr);gap:12px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--jade);border-radius:10px;padding:10px 12px}
+.slot.jiuli{border-left-color:var(--ochre)}
+.slot.past{opacity:.5}
+.slot.live{box-shadow:0 0 0 2px var(--jade) inset}
+.slot .t{font-family:var(--f-mono);font-size:.82rem;font-weight:600;line-height:1.3}
+.slot .t i{display:block;font-style:normal;color:var(--muted);font-weight:500}
+.slot .n{font-weight:700;line-height:1.25}
+.slot .m{font-size:.8rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:3px}
+.chip{display:inline-block;font-size:.72rem;font-weight:700;padding:1px 7px;border-radius:999px;background:var(--jade-soft);color:var(--jade)}
+.chip.jiuli{background:var(--ochre-soft);color:var(--ochre)}
+.free{font-size:.85rem;color:var(--muted);padding:8px 12px;border:1px dashed var(--line);border-radius:10px}
+
+.weeknav{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.weeknav button,.btn{font:inherit;font-size:.85rem;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 12px;border-radius:9px;cursor:pointer}
+.weeknav strong{font-size:.95rem}
+
+.dl{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.dl input{width:20px;height:20px;accent-color:var(--jade)}
+.dl .n{font-weight:700;line-height:1.25}
+.dl .s{font-size:.8rem;color:var(--muted)}
+.dl .w{font-family:var(--f-mono);font-size:.78rem;font-weight:600;text-align:right;white-space:nowrap}
+.dl.urgent{border-color:var(--red)} .dl.urgent .w{color:var(--red)}
+.dl.done .n{text-decoration:line-through;color:var(--muted)}
+.dl.over{opacity:.55}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.85rem}
+td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+tr.mine td{background:var(--jade-soft)}
+.campus{display:flex;flex-direction:column;gap:4px;padding:10px;border-radius:10px;background:var(--bg);border-left:4px solid var(--jade)}
+.campus.jiuli{border-left-color:var(--ochre)}
+.campus .big{font-family:var(--f-zh);font-size:1.25rem;font-weight:700}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.setting{display:flex;flex-direction:column;gap:6px}
+.setting input[type=date]{font:inherit;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);max-width:100%}
+.maps{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.maplink{font-size:.78rem;font-weight:600;text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--surface);padding:5px 10px;border-radius:999px}
+.maplink.main{background:var(--jade);border-color:var(--jade);color:var(--surface)}
+.jiuli .maplink.main,.hero.jiuli .maplink.main{background:var(--ochre);border-color:var(--ochre)}
+.where{font-size:.85rem;padding:10px;border-radius:10px;background:var(--bg)}
+.chip.off{background:var(--red-soft);color:var(--red)}
+a{color:var(--jade)}
+[hidden]{display:none!important}
+ul.plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:.9rem}
+footer{font-size:.75rem;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion:no-preference){.hero{animation:rise .35s ease-out}@keyframes rise{from{transform:translateY(4px)}to{transform:none}}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Semestre 1 · SWJTU</h1>
+      <div class="sub" id="today">…</div>
+    </div>
+    <span class="weekpill" id="weekpill">Semaine ?</span>
+  </header>
+
+  <div class="hero" id="hero"></div>
+  <div id="alerts" style="display:flex;flex-direction:column;gap:8px"></div>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-jour" aria-selected="true" data-p="jour">Jour</button>
+    <button role="tab" id="tab-semaine" aria-selected="false" data-p="semaine">Semaine</button>
+    <button role="tab" id="tab-echeances" aria-selected="false" data-p="echeances">Échéances</button>
+    <button role="tab" id="tab-reperes" aria-selected="false" data-p="reperes">Repères</button>
+  </nav>
+
+  <section class="panel" id="p-jour"></section>
+  <section class="panel" id="p-semaine" hidden></section>
+  <section class="panel" id="p-echeances" hidden></section>
+  <section class="panel" id="p-reperes" hidden>
+    <div class="card setting">
+      <h3>Lundi de la semaine 1</h3>
+      <div class="muted" style="font-size:.85rem">Réglé sur le 7 septembre 2026. Je l'ai déduit du premier cours d'Analyse matricielle (mercredi 16 septembre, semaine 2). Si un camarade ou le calendrier officiel dit autre chose, change la date ici.</div>
+      <div class="row"><input type="date" id="w1"><button class="btn" id="w1clear" type="button">Revenir au 7 sept.</button></div>
+    </div>
+
+    <div class="card">
+      <h3>Où sont mes cours</h3>
+      <div class="muted" style="font-size:.82rem">En Chine, utilise <b>Amap (高德地图)</b> ou <b>Baidu Maps</b> : ils marchent sans VPN et proposent l'itinéraire à pied, en métro ou en bus (touche 路线). Google Maps ne marche qu'avec un VPN.</div>
+      <div id="placecards" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+
+    <div class="card">
+      <h3>Analyse matricielle · infos du prof</h3>
+      <ul class="plain">
+        <li>Prof : Avik Ranjan Adhikary · <span class="mono" style="user-select:all">avik.adhikary@swjtu.edu.cn</span></li>
+        <li>Salle 9136, bâtiment 9, campus Xipu. Mercredi de 09:50 à 12:25 selon le prof.</li>
+        <li><b>Pas de cours le 14 et le 21 octobre.</b></li>
+        <li>Devoir 2 avant le 21 oct. à 23:59 (PDF). Mi-semestre le 4 novembre.</li>
+        <li><a href="https://avikradhikary.github.io/Matrix_Analysis_2026.html" target="_blank" rel="noopener">Page du cours (slides, devoirs, corrigés)</a></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Les deux campus</h3>
+      <div class="campus">
+        <div class="row"><span class="big">西南交通大学犀浦校区</span><button class="btn copy" type="button" data-copy="西南交通大学犀浦校区">Copier</button></div>
+        <div><b>Xipu</b> · lundi, mardi, mercredi. Salles X9136 (Chinois, Aperçu de la Chine, Analyse matricielle) et X9458 (Big data).</div>
+      </div>
+      <div class="campus jiuli">
+        <div class="row"><span class="big">西南交通大学九里校区</span><button class="btn copy" type="button" data-copy="西南交通大学九里校区">Copier</button></div>
+        <div><b>Jiuli</b> · jeudi soir seulement. Salle 4518 (Simulation), sans doute au bâtiment 4. C'est l'autre campus : fais le trajet une première fois en avance pour connaître le temps réel. Le cours finit à 21:55, pense au retour.</div>
+      </div>
+      <div class="muted" style="font-size:.8rem">Montre le nom en chinois à un chauffeur ou colle-le dans une appli de cartes.</div>
+    </div>
+
+    <div class="card">
+      <h3>Horaires des sections (节)</h3>
+      <div class="muted" style="font-size:.82rem">L'emploi du temps chinois compte en sections de 45 min. Les lignes en vert sont celles où tu as cours.</div>
+      <div class="tablewrap"><table id="bells"><thead><tr><th>节</th><th>Horaire</th><th>Tes cours</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <div class="card">
+      <h3>Cours sans créneau fixe</h3>
+      <ul class="plain">
+        <li><b>Culture générale en IA</b> (GM34803001) : pas encore planifié. Surveille les annonces.</li>
+        <li><b>Rédaction académique en anglais</b> : pas sur l'emploi du temps S1.</li>
+        <li><b>Pratique professionnelle</b> (6 crédits) : sans horaire.</li>
+        <li><b>Formation à la recherche</b> : séminaires du groupe, activités académiques, revue de littérature, avec 何滨 (He Bin).</li>
+        <li><b>Éducation physique</b> : prévue au plan, pas sur l'emploi du temps.</li>
+        <li><b>Aperçu de la Chine</b> : en plus du cours du mardi, vidéos et tests en ligne (UMOOC). Voir Échéances.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Mots utiles</h3>
+      <div class="tablewrap"><table>
+        <tbody>
+          <tr><td class="zh">第几周？</td><td>dì jǐ zhōu</td><td>On est en quelle semaine ?</td></tr>
+          <tr><td class="zh">教室</td><td>jiàoshì</td><td>salle de classe</td></tr>
+          <tr><td class="zh">校区</td><td>xiàoqū</td><td>campus</td></tr>
+          <tr><td class="zh">上课 / 下课</td><td>shàngkè / xiàkè</td><td>début / fin du cours</td></tr>
+          <tr><td class="zh">第一节</td><td>dì yī jié</td><td>section 1</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <footer>Heure de Chine (Chengdu). Sources : emploi du temps officiel du 16/09/2026, calendrier UMOOC, page du cours d'Analyse matricielle.</footer>
+</div>
+
+<script>
+(function(){
+const TZ_OFF = 8; // Chine = UTC+8
+const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+const MONTHS = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+const BELLS = [["08:00","08:45"],["08:50","09:35"],["09:50","10:35"],["10:40","11:25"],["11:30","12:15"],["14:00","14:45"],["14:50","15:35"],["15:50","16:35"],["16:40","17:25"],["17:30","18:15"],["19:30","20:15"],["20:20","21:05"],["21:10","21:55"],["22:00","22:45"]];
+
+const DEFAULT_W1 = "2026-09-07"; // déduit : 1er cours d'Analyse matricielle le mer. 16 sept = semaine 2
+
+const PLACES = {
+  x9: {name:"Bâtiment 9 (9号教学楼), campus Xipu", zh:"西南交通大学犀浦校区9号教学楼", sure:true},
+  j4: {name:"Bâtiment 4 probable (4号教学楼), campus Jiuli", zh:"西南交通大学九里校区4号教学楼", campus:"西南交通大学九里校区", sure:false}
+};
+
+const COURSES = [
+  {id:"bd", dow:0, sec:[3,4], fr:"Gestion et analyse intelligente du big data", en:"Smart Big Data Management and Analysis", campus:"xipu", room:"X9458", place:"x9", w:[2,17]},
+  {id:"zh", dow:1, sec:[1,4], fr:"Chinois", en:"Chinese I (sem. 2 à 9) puis Chinese II (sem. 10 à 17)", campus:"xipu", room:"X9136", place:"x9", w:[2,17]},
+  {id:"oc", dow:1, sec:[9,10], fr:"Aperçu de la Chine", en:"Overview of China", campus:"xipu", room:"X9136", place:"x9", w:[2,17]},
+  {id:"ma", dow:2, sec:[3,5], fr:"Analyse matricielle", en:"Matrix Analysis · prof. Avik Ranjan Adhikary", campus:"xipu", room:"X9136", place:"x9", w:[2,17], off:["2026-10-14","2026-10-21"]},
+  {id:"sim", dow:3, sec:[11,13], fr:"Simulation de systèmes à événements discrets", en:"Discrete Event System Simulation", campus:"jiuli", room:"4518", place:"j4", w:[2,17]}
+];
+
+const DEADLINES = [
+  {id:"u1", d:"2026-09-28", c:"Aperçu de la Chine · UMOOC", n:"Orientation et Unité 1 : la Grande Muraille", s:"Vidéos, discussion leçons 1 et 2, test 1 (3 essais)"},
+  {id:"u2", d:"2026-10-12", c:"Aperçu de la Chine · UMOOC", n:"Unité 2 : la Cité interdite", s:"Vidéos, test 2 (3 essais)"},
+  {id:"ma2", d:"2026-10-21", h:"23:59", c:"Analyse matricielle", n:"Devoir 2 (Assignment 2)", s:"Décomposition CR, moindres carrés. PDF uniquement. Le formulaire affiche déjà « terminé » : vérifie avec le prof."},
+  {id:"u3", d:"2026-10-26", c:"Aperçu de la Chine · UMOOC", n:"Unité 3 : l'armée de terre cuite", s:"Vidéos, test 3 (3 essais)"},
+  {id:"mamid", d:"2026-11-04", h:"09:50", c:"Analyse matricielle", n:"Examen de mi-semestre (Mid-sem)", s:"Le 4 novembre. Heure et salle à confirmer en cours."},
+  {id:"u4", d:"2026-11-09", c:"Aperçu de la Chine · UMOOC", n:"Unité 4 : mont Qingcheng et Dujiangyan", s:"Vidéos, test 4 (3 essais)"},
+  {id:"u5", d:"2026-11-23", c:"Aperçu de la Chine · UMOOC", n:"Unité 5 : les Trois Kong", s:"Vidéos, test 5 (3 essais)"},
+  {id:"u6", d:"2026-12-07", c:"Aperçu de la Chine · UMOOC", n:"Unité 6 : mont Emei et Leshan", s:"Vidéos, discussion leçon 3, test 6 (3 essais)"},
+  {id:"fin", d:"2026-12-21", c:"Aperçu de la Chine · UMOOC", n:"Test final", s:"Un seul essai"}
+].map(x=>({...x, t:Date.parse(x.d+"T"+(x.h||"20:00")+":00+08:00")}));
+
+const enc = encodeURIComponent;
+function mapLinks(key, compact){
+  const p=PLACES[key], q=enc(p.zh);
+  const a=`<a class="maplink main" href="https://uri.amap.com/search?keyword=${q}&city=${enc("成都")}" target="_blank" rel="noopener">Plan · Amap 高德</a>`;
+  if(compact) return a;
+  return a+`<a class="maplink" href="https://map.baidu.com/search/${q}?querytype=s&wd=${q}" target="_blank" rel="noopener">Baidu</a><a class="maplink" href="https://maps.apple.com/?q=${q}" target="_blank" rel="noopener">Apple Plans</a><a class="maplink" href="https://www.google.com/maps/search/?api=1&query=${q}" target="_blank" rel="noopener">Google (VPN)</a>`
+   +(p.campus?`<a class="maplink" href="https://uri.amap.com/search?keyword=${enc(p.campus)}&city=${enc("成都")}" target="_blank" rel="noopener">Tout le campus</a>`:"");
+}
+
+function store(k,v){try{ if(v===undefined) return localStorage.getItem(k); if(v===null) localStorage.removeItem(k); else localStorage.setItem(k,v);}catch(e){return null}}
+const hm = s => { const [h,m]=s.split(":").map(Number); return [h,m]; };
+const pad = n => String(n).padStart(2,"0");
+
+// Chinese local "today" as Y/M/D
+function cnParts(ms){ const d=new Date(ms + TZ_OFF*3600e3); return {y:d.getUTCFullYear(), m:d.getUTCMonth(), d:d.getUTCDate(), dow:(d.getUTCDay()+6)%7, h:d.getUTCHours(), mi:d.getUTCMinutes()}; }
+function dayUTC(y,m,d){ return Date.UTC(y,m,d); }          // midnight label for a CN calendar day
+function at(dayMs, hhmm){ const [h,m]=hm(hhmm); return dayMs + (h-TZ_OFF)*3600e3 + m*60e3; } // absolute ms
+
+function ymdOf(day){ const d=new Date(day); return d.getUTCFullYear()+"-"+pad(d.getUTCMonth()+1)+"-"+pad(d.getUTCDate()); }
+function week1(){ const v=store("edt_w1")||DEFAULT_W1; if(!v) return null; const [y,m,d]=v.split("-").map(Number); return dayUTC(y,m-1,d); }
+function weekOf(dayMs){ const w=week1(); if(w==null) return null; return Math.floor((dayMs-w)/(7*864e5))+1; }
+function active(c,wk){ return wk==null || (wk>=c.w[0] && wk<=c.w[1]); }
+function title(c,wk){ if(c.id!=="zh") return c.fr; if(wk==null) return "Chinois I / II"; return wk<=9?"Chinois I":"Chinois II"; }
+function enLine(c,wk){ if(c.id!=="zh") return c.en; if(wk==null) return c.en; return wk<=9?"Chinese I · semaines 2 à 9":"Chinese II · semaines 10 à 17"; }
+const start = c => BELLS[c.sec[0]-1][0], end = c => BELLS[c.sec[1]-1][1];
+const campusName = c => c.campus==="jiuli" ? "Jiuli 九里" : "Xipu 犀浦";
+
+function events(fromDay, nDays){
+  const out=[];
+  for(let i=0;i<nDays;i++){
+    const day=fromDay+i*864e5, dow=(new Date(day).getUTCDay()+6)%7, wk=weekOf(day);
+    const ymd=ymdOf(day);
+    COURSES.filter(c=>c.dow===dow && active(c,wk)).forEach(c=>out.push({c,day,wk,s:at(day,start(c)),e:at(day,end(c)),off:!!(c.off&&c.off.includes(ymd))}));
+  }
+  return out.sort((a,b)=>a.s-b.s);
+}
+function fmtDur(ms){
+  const m=Math.max(0,Math.round(ms/60000)); const d=Math.floor(m/1440), h=Math.floor(m%1440/60), mi=m%60;
+  if(d>0) return d+" j "+(h? h+" h":""); if(h>0) return h+" h "+(mi? pad(mi):""); return mi+" min";
+}
+function dayLabel(day){ const p=cnParts(day - TZ_OFF*3600e3); return DAYS[p.dow]+" "+p.d+" "+MONTHS[p.m]; }
+
+function slotHTML(ev, now){
+  const c=ev.c, cls=["slot"]; if(c.campus==="jiuli") cls.push("jiuli");
+  if(ev.off) cls.push("past"); else if(now>=ev.e) cls.push("past"); else if(now>=ev.s) cls.push("live");
+  return `<div class="${cls.join(" ")}">
+    <div class="t">${start(c)}<i>${end(c)}</i></div>
+    <div style="min-width:0"><div class="n">${ev.off?"<s>"+title(c,ev.wk)+"</s> <span class=\"chip off\">Pas de cours</span>":title(c,ev.wk)}</div>
+      <div class="m"><span class="chip ${c.campus==="jiuli"?"jiuli":""}">${campusName(c)}</span><span>Salle <b class="mono">${c.room}</b></span><span>节 ${c.sec[0]}–${c.sec[1]}</span></div>
+      <div class="m">${enLine(c,ev.wk)}</div>
+      ${ev.off?"":`<div class="maps">${mapLinks(c.place,true)}</div>`}</div></div>`;
+}
+
+let weekOffset=0;
+function render(){
+  const now=Date.now(), p=cnParts(now), today=dayUTC(p.y,p.m,p.d), wk=weekOf(today);
+  document.getElementById("today").textContent = DAYS[p.dow]+" "+p.d+" "+MONTHS[p.m]+" · "+pad(p.h)+":"+pad(p.mi)+" à Chengdu";
+  const pill=document.getElementById("weekpill");
+  if(wk==null){ pill.textContent="Semaine ? · à régler"; pill.className="weekpill unknown"; }
+  else if(wk<2||wk>17){ pill.textContent="Semaine "+wk+" · hors cours"; pill.className="weekpill unknown"; }
+  else { pill.textContent="Semaine "+wk+" / 17"; pill.className="weekpill"; }
+
+  // HERO
+  const evs=events(today, 21);
+  const live=evs.find(e=>!e.off && now>=e.s && now<e.e), next=evs.find(e=>!e.off && e.s>now);
+  const h=document.getElementById("hero"); const ev=live||next;
+  if(!ev){ h.className="hero"; h.innerHTML=`<div class="state"><span>Prochain cours</span></div><h2>Aucun cours dans les 3 prochaines semaines</h2><div class="muted">Vérifie la date de la semaine 1 dans Repères.</div>`; }
+  else{
+    const c=ev.c, isToday=ev.day===today, isTomorrow=ev.day===today+864e5;
+    const when = isToday?"Aujourd'hui":isTomorrow?"Demain":dayLabel(ev.day);
+    h.className="hero"+(c.campus==="jiuli"?" jiuli":"");
+    h.innerHTML=`<div class="state"><span>${live?"<b>En cours</b>":"Prochain cours"}</span><span class="count">${live?"fin dans "+fmtDur(ev.e-now):"dans "+fmtDur(ev.s-now)}</span></div>
+      <h2>${title(c,ev.wk)}</h2><div class="en">${enLine(c,ev.wk)}</div>
+      <div class="facts">
+        <div class="fact"><small>Quand</small><span>${when}</span></div>
+        <div class="fact"><small>Horaire</small><span class="mono">${start(c)}–${end(c)}</span></div>
+        <div class="fact"><small>Salle</small><span class="mono">${c.room}</span></div>
+      </div>
+      <div class="m" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="chip ${c.campus==="jiuli"?"jiuli":""}">${campusName(c)}</span><span class="muted" style="font-size:.85rem">节 ${c.sec[0]} à ${c.sec[1]}</span></div>
+      ${c.id==="ma"?`<div class="muted" style="font-size:.82rem">Le prof indique une fin à 12:25.</div>`:""}
+      ${c.campus==="jiuli"?`<div class="note"><b>Autre campus.</b> Jiuli, pas Xipu. Pars en avance et prévois le retour après 21:55.</div>`:""}
+      <div class="where"><b>${PLACES[c.place].name}</b>${PLACES[c.place].sure?"":" · à vérifier sur place"}<div class="maps">${mapLinks(c.place,false)}</div></div>`;
+  }
+
+  // ALERTS: next deadline within 7 days
+  const al=document.getElementById("alerts"); al.innerHTML="";
+  const done=JSON.parse(store("edt_done")||"{}");
+  const upcoming=DEADLINES.filter(x=>x.t>now && !done[x.id] && x.t-now<7*864e5);
+  al.innerHTML=upcoming.map(u=>{ const urgent=u.t-now<72*3600e3;
+    return `<div class="alert ${urgent?"":"soft"}"><span class="dot"></span><div><b>${u.c}</b> · ${u.n}. ${u.id==="mamid"?"Le":"Avant "+(u.h||"20:00")+" le"} ${dayLabel(dayUTC(...u.d.split("-").map((v,i)=>i===1?v-1:+v))).toLowerCase()}, dans <span class="mono">${fmtDur(u.t-now)}</span>.</div></div>`; }).join("");
+
+  // JOUR
+  const todays=evs.filter(e=>e.day===today);
+  const pj=document.getElementById("p-jour");
+  let html=`<h3>Aujourd'hui</h3>`;
+  html+= todays.length? todays.map(e=>slotHTML(e,now)).join("") : `<div class="free">Pas de cours aujourd'hui. Créneau pour réviser, les langues, la programmation et la recherche.</div>`;
+  const tomorrow=evs.filter(e=>e.day===today+864e5);
+  html+=`<h3>Demain</h3>`+(tomorrow.length? tomorrow.map(e=>slotHTML(e,now)).join("") : `<div class="free">Pas de cours demain.</div>`);
+  pj.innerHTML=html;
+
+  // SEMAINE
+  const monday=today - p.dow*864e5 + weekOffset*7*864e5;
+  const wkShown=weekOf(monday);
+  const ps=document.getElementById("p-semaine");
+  let sh=`<div class="weeknav"><button type="button" id="wprev" aria-label="Semaine précédente">←</button><strong>${wkShown==null?(weekOffset===0?"Cette semaine":"Semaine du "+dayLabel(monday)):"Semaine "+wkShown}${weekOffset===0&&wkShown!=null?" · en cours":""}</strong><button type="button" id="wnext" aria-label="Semaine suivante">→</button></div>`;
+  const wevs=events(monday,7);
+  for(let i=0;i<7;i++){
+    const day=monday+i*864e5, list=wevs.filter(e=>e.day===day);
+    sh+=`<div class="day ${day===today?"today":""}"><div class="dayhead"><span>${DAYS[i]}${day===today?" · aujourd'hui":""}</span><span class="d">${dayLabel(day).split(" ").slice(1).join(" ")}</span></div>`;
+    sh+= list.length? list.map(e=>slotHTML(e,now)).join("") : `<div class="free">Libre</div>`;
+    sh+=`</div>`;
+  }
+  if(wkShown!=null && (wkShown<2||wkShown>17)) sh=`<div class="note"><b>Semaine ${wkShown}.</b> Les cours ont lieu des semaines 2 à 17.</div>`+sh;
+  ps.innerHTML=sh;
+  document.getElementById("wprev").onclick=()=>{weekOffset--;render();};
+  document.getElementById("wnext").onclick=()=>{weekOffset++;render();};
+
+  // ECHEANCES
+  const pe=document.getElementById("p-echeances");
+  let eh=`<div class="muted" style="font-size:.85rem">Heure de Chine. UMOOC : toujours avant 20:00. Coche ce qui est fait.</div>`;
+  DEADLINES.forEach(x=>{
+    const t=x.t, over=t<=now, isDone=!!done[x.id], urgent=!over&&!isDone&&t-now<72*3600e3;
+    const dd=x.d.split("-"); const lbl=+dd[2]+" "+MONTHS[+dd[1]-1];
+    eh+=`<label class="dl ${isDone?"done":""} ${over&&!isDone?"over":""} ${urgent?"urgent":""}"><input type="checkbox" data-id="${x.id}" ${isDone?"checked":""}><div style="min-width:0"><div class="s">${x.c}</div><div class="n">${x.n}</div><div class="s">${x.s}</div></div><div class="w">${lbl}<br>${over?"passé":isDone?"fait":"J-"+Math.ceil((t-now)/864e5)}</div></label>`;
+  });
+  pe.innerHTML=eh;
+  pe.querySelectorAll("input[type=checkbox]").forEach(cb=>cb.onchange=()=>{const d=JSON.parse(store("edt_done")||"{}"); if(cb.checked) d[cb.dataset.id]=1; else delete d[cb.dataset.id]; store("edt_done",JSON.stringify(d)); render();});
+
+  // BELLS
+  const tb=document.querySelector("#bells tbody");
+  tb.innerHTML=BELLS.map((b,i)=>{const n=i+1; const cs=COURSES.filter(c=>n>=c.sec[0]&&n<=c.sec[1]).map(c=>DAYS[c.dow].slice(0,3)+". "+({bd:"Big data",zh:"Chinois",oc:"Aperçu Chine",ma:"Analyse matricielle",sim:"Simulation"})[c.id]); return `<tr class="${cs.length?"mine":""}"><td class="mono">${n}</td><td class="mono">${b[0]}–${b[1]}</td><td>${cs.join(", ")}</td></tr>`;}).join("");
+}
+
+// tabs
+const tabs=[...document.querySelectorAll("nav.tabs button")];
+function show(id){ tabs.forEach(t=>t.setAttribute("aria-selected",t.dataset.p===id)); ["jour","semaine","echeances","reperes"].forEach(p=>document.getElementById("p-"+p).hidden=p!==id); store("edt_tab",id); }
+tabs.forEach(t=>t.onclick=()=>show(t.dataset.p));
+const h0=(location.hash||"").slice(1); show(["jour","semaine","echeances","reperes"].includes(h0)?h0:(store("edt_tab")||"jour"));
+
+// week 1 setting
+const w1=document.getElementById("w1"); w1.value=store("edt_w1")||DEFAULT_W1;
+w1.onchange=()=>{ store("edt_w1", w1.value||null); weekOffset=0; render(); };
+document.getElementById("w1clear").onclick=()=>{ w1.value=DEFAULT_W1; store("edt_w1",null); render(); };
+document.getElementById("placecards").innerHTML=Object.entries(PLACES).map(([k,p])=>{
+  const cs=COURSES.filter(c=>c.place===k).map(c=>c.id==="zh"?"Chinois":c.fr).join(", ");
+  return `<div class="campus ${k==="j4"?"jiuli":""}"><div><b>${p.name}</b>${p.sure?"":" · à vérifier"}</div><div class="zh" style="font-size:1.05rem">${p.zh}</div><div class="muted" style="font-size:.82rem">${cs}</div><div class="maps">${mapLinks(k,false)}</div></div>`;}).join("");
+
+// copy buttons
+document.querySelectorAll(".copy").forEach(b=>b.onclick=()=>{ const t=b.dataset.copy;
+  const ok=()=>{b.textContent="Copié"; setTimeout(()=>b.textContent="Copier",1500);};
+  if(navigator.clipboard) navigator.clipboard.writeText(t).then(ok).catch(()=>{const r=document.createRange(); r.selectNodeContents(b.previousElementSibling); const s=getSelection(); s.removeAllRanges(); s.addRange(r);}); });
+
+render(); setInterval(render, 30000);
+})();
+</script>
+
+</body>
+</html>
