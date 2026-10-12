@@ -161,7 +161,7 @@ footer{font-size:.75rem;color:var(--muted);text-align:center}
     </div>
 
     <div class="card">
-      <h3>Pointage de présence (Aperçu de la Chine)</h3>
+      <h3>Pointage de présence (Chinois)</h3>
       <div class="muted" style="font-size:.85rem">À chaque cours, la présence se marque dans le mini-programme WeChat <span class="zh">位置签到</span>. Astuce : colle ce lien une fois dans « 文件传输助手 » (File Transfer) sur WeChat, puis épingle le mini-programme dans « 我的小程序 » pour l'ouvrir en un geste.</div>
       <div class="row"><span class="mono ckl">#小程序://位置签到/pIeUfb4oENU6qUv</span><button class="btn copy" type="button" data-copy="#小程序://位置签到/pIeUfb4oENU6qUv">Copier</button></div>
     </div>
@@ -181,7 +181,7 @@ footer{font-size:.75rem;color:var(--muted);text-align:center}
       <h3>Les deux campus</h3>
       <div class="campus">
         <div class="row"><span class="big">西南交通大学犀浦校区</span><button class="btn copy" type="button" data-copy="西南交通大学犀浦校区">Copier</button></div>
-        <div><b>Xipu</b> · lundi, mardi, mercredi. Salles X9136 (Chinois, Analyse matricielle), X9305 (Aperçu de la Chine) et X9458 (Big data).</div>
+        <div><b>Xipu</b> · lundi, mardi, mercredi. Salles X9305 (Chinois), X9136 (Aperçu de la Chine, Analyse matricielle) et X9458 (Big data).</div>
       </div>
       <div class="campus jiuli">
         <div class="row"><span class="big">西南交通大学九里校区</span><button class="btn copy" type="button" data-copy="西南交通大学九里校区">Copier</button></div>
@@ -241,8 +241,8 @@ const PLACES = {
 
 const COURSES = [
   {id:"bd", dow:0, sec:[3,4], fr:"Gestion et analyse intelligente du big data", en:"Smart Big Data Management and Analysis", campus:"xipu", room:"X9458", place:"x9", w:[2,17]},
-  {id:"zh", dow:1, sec:[1,4], fr:"Chinois", en:"Chinese I (sem. 2 à 9) puis Chinese II (sem. 10 à 17)", campus:"xipu", room:"X9136", place:"x9", w:[2,17]},
-  {id:"oc", dow:1, sec:[9,10], fr:"Aperçu de la Chine", en:"Overview of China", campus:"xipu", room:"X9305", place:"x9", w:[2,17], checkin:true},
+  {id:"zh", dow:1, sec:[1,4], fr:"Chinois", en:"Chinese I (sem. 2 à 9) puis Chinese II (sem. 10 à 17)", campus:"xipu", room:"X9305", place:"x9", w:[2,17], checkin:true},
+  {id:"oc", dow:1, sec:[9,10], fr:"Aperçu de la Chine", en:"Overview of China", campus:"xipu", room:"X9136", place:"x9", w:[2,17]},
   {id:"ma", dow:2, sec:[3,5], fr:"Analyse matricielle", en:"Matrix Analysis · prof. Avik Ranjan Adhikary", campus:"xipu", room:"X9136", place:"x9", w:[2,17], off:["2026-10-14","2026-10-21"]},
   {id:"sim", dow:3, sec:[11,13], fr:"Simulation de systèmes à événements discrets", en:"Discrete Event System Simulation", campus:"jiuli", room:"4518", place:"j4", w:[2,17]}
 ];
