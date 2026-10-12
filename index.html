@@ -113,6 +113,10 @@ tr.mine td{background:var(--jade-soft)}
 .where{font-size:.85rem;padding:10px;border-radius:10px;background:var(--bg)}
 .chip.off{background:var(--red-soft);color:var(--red)}
 a{color:var(--jade)}
+.checkin{display:flex;flex-direction:column;gap:8px;font-size:.88rem;padding:10px 12px;border-radius:10px;background:var(--red-soft);border:1px solid var(--red)}
+.checkin b{color:var(--red)}
+.ckl{font-size:.75rem;overflow-wrap:anywhere;min-width:0;flex:1}
+.chip.ck{background:var(--red-soft);color:var(--red)}
 [hidden]{display:none!important}
 ul.plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:.9rem}
 footer{font-size:.75rem;color:var(--muted);text-align:center}
@@ -157,6 +161,12 @@ footer{font-size:.75rem;color:var(--muted);text-align:center}
     </div>
 
     <div class="card">
+      <h3>Pointage de présence (Aperçu de la Chine)</h3>
+      <div class="muted" style="font-size:.85rem">À chaque cours, la présence se marque dans le mini-programme WeChat <span class="zh">位置签到</span>. Astuce : colle ce lien une fois dans « 文件传输助手 » (File Transfer) sur WeChat, puis épingle le mini-programme dans « 我的小程序 » pour l'ouvrir en un geste.</div>
+      <div class="row"><span class="mono ckl">#小程序://位置签到/pIeUfb4oENU6qUv</span><button class="btn copy" type="button" data-copy="#小程序://位置签到/pIeUfb4oENU6qUv">Copier</button></div>
+    </div>
+
+    <div class="card">
       <h3>Analyse matricielle · infos du prof</h3>
       <ul class="plain">
         <li>Prof : Avik Ranjan Adhikary · <span class="mono" style="user-select:all">avik.adhikary@swjtu.edu.cn</span></li>
@@ -171,7 +181,7 @@ footer{font-size:.75rem;color:var(--muted);text-align:center}
       <h3>Les deux campus</h3>
       <div class="campus">
         <div class="row"><span class="big">西南交通大学犀浦校区</span><button class="btn copy" type="button" data-copy="西南交通大学犀浦校区">Copier</button></div>
-        <div><b>Xipu</b> · lundi, mardi, mercredi. Salles X9136 (Chinois, Aperçu de la Chine, Analyse matricielle) et X9458 (Big data).</div>
+        <div><b>Xipu</b> · lundi, mardi, mercredi. Salles X9136 (Chinois, Analyse matricielle), X9305 (Aperçu de la Chine) et X9458 (Big data).</div>
       </div>
       <div class="campus jiuli">
         <div class="row"><span class="big">西南交通大学九里校区</span><button class="btn copy" type="button" data-copy="西南交通大学九里校区">Copier</button></div>
@@ -232,7 +242,7 @@ const PLACES = {
 const COURSES = [
   {id:"bd", dow:0, sec:[3,4], fr:"Gestion et analyse intelligente du big data", en:"Smart Big Data Management and Analysis", campus:"xipu", room:"X9458", place:"x9", w:[2,17]},
   {id:"zh", dow:1, sec:[1,4], fr:"Chinois", en:"Chinese I (sem. 2 à 9) puis Chinese II (sem. 10 à 17)", campus:"xipu", room:"X9136", place:"x9", w:[2,17]},
-  {id:"oc", dow:1, sec:[9,10], fr:"Aperçu de la Chine", en:"Overview of China", campus:"xipu", room:"X9136", place:"x9", w:[2,17]},
+  {id:"oc", dow:1, sec:[9,10], fr:"Aperçu de la Chine", en:"Overview of China", campus:"xipu", room:"X9305", place:"x9", w:[2,17], checkin:true},
   {id:"ma", dow:2, sec:[3,5], fr:"Analyse matricielle", en:"Matrix Analysis · prof. Avik Ranjan Adhikary", campus:"xipu", room:"X9136", place:"x9", w:[2,17], off:["2026-10-14","2026-10-21"]},
   {id:"sim", dow:3, sec:[11,13], fr:"Simulation de systèmes à événements discrets", en:"Discrete Event System Simulation", campus:"jiuli", room:"4518", place:"j4", w:[2,17]}
 ];
@@ -249,6 +259,8 @@ const DEADLINES = [
   {id:"fin", d:"2026-12-21", c:"Aperçu de la Chine · UMOOC", n:"Test final", s:"Un seul essai"}
 ].map(x=>({...x, t:Date.parse(x.d+"T"+(x.h||"20:00")+":00+08:00")}));
 
+const CHECKIN = "#小程序://位置签到/pIeUfb4oENU6qUv";
+const checkinBox = () => `<div class="checkin"><div><b>Pointe ta présence</b> dans WeChat : mini-programme <span class="zh">位置签到</span> (pointage par localisation). Fais-le une fois dans la salle.</div><div class="row"><span class="mono ckl">${CHECKIN}</span><button class="btn copy" type="button" data-copy="${CHECKIN}">Copier</button></div></div>`;
 const enc = encodeURIComponent;
 function mapLinks(key, compact){
   const p=PLACES[key], q=enc(p.zh);
@@ -299,6 +311,7 @@ function slotHTML(ev, now){
     <div style="min-width:0"><div class="n">${ev.off?"<s>"+title(c,ev.wk)+"</s> <span class=\"chip off\">Pas de cours</span>":title(c,ev.wk)}</div>
       <div class="m"><span class="chip ${c.campus==="jiuli"?"jiuli":""}">${campusName(c)}</span><span>Salle <b class="mono">${c.room}</b></span><span>节 ${c.sec[0]}–${c.sec[1]}</span></div>
       <div class="m">${enLine(c,ev.wk)}</div>
+      ${c.checkin&&!ev.off?`<div class="m"><span class="chip ck">Présence WeChat 位置签到</span></div>`:""}
       ${ev.off?"":`<div class="maps">${mapLinks(c.place,true)}</div>`}</div></div>`;
 }
 
@@ -330,6 +343,7 @@ function render(){
       <div class="m" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="chip ${c.campus==="jiuli"?"jiuli":""}">${campusName(c)}</span><span class="muted" style="font-size:.85rem">节 ${c.sec[0]} à ${c.sec[1]}</span></div>
       ${c.id==="ma"?`<div class="muted" style="font-size:.82rem">Le prof indique une fin à 12:25.</div>`:""}
       ${c.campus==="jiuli"?`<div class="note"><b>Autre campus.</b> Jiuli, pas Xipu. Pars en avance et prévois le retour après 21:55.</div>`:""}
+      ${c.checkin?checkinBox():""}
       <div class="where"><b>${PLACES[c.place].name}</b>${PLACES[c.place].sure?"":" · à vérifier sur place"}<div class="maps">${mapLinks(c.place,false)}</div></div>`;
   }
 
@@ -397,7 +411,7 @@ document.getElementById("placecards").innerHTML=Object.entries(PLACES).map(([k,p
   return `<div class="campus ${k==="j4"?"jiuli":""}"><div><b>${p.name}</b>${p.sure?"":" · à vérifier"}</div><div class="zh" style="font-size:1.05rem">${p.zh}</div><div class="muted" style="font-size:.82rem">${cs}</div><div class="maps">${mapLinks(k,false)}</div></div>`;}).join("");
 
 // copy buttons
-document.querySelectorAll(".copy").forEach(b=>b.onclick=()=>{ const t=b.dataset.copy;
+document.addEventListener("click",e=>{ const b=e.target.closest(".copy"); if(!b) return; const t=b.dataset.copy;
   const ok=()=>{b.textContent="Copié"; setTimeout(()=>b.textContent="Copier",1500);};
   if(navigator.clipboard) navigator.clipboard.writeText(t).then(ok).catch(()=>{const r=document.createRange(); r.selectNodeContents(b.previousElementSibling); const s=getSelection(); s.removeAllRanges(); s.addRange(r);}); });
 
